@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
-import { prisma } from "@acme/database";
+import { supabase } from "@/lib/supabase";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+const ADMIN_EMAIL = "osaouri13@gmail.com";
 
 export async function POST(req: Request) {
   try {
     const { email, password, name } = await req.json();
 
-    // Add debug logging
-    console.log("Received registration request:", { email, name });
-
-    // Validate input
     if (!email || !password || !name) {
       return NextResponse.json(
         { message: "Missing required fields" },
@@ -17,10 +17,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    // Check if user exists
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select()
+      .eq("email", email)
+      .single();
 
     if (existingUser) {
       return NextResponse.json(
@@ -29,35 +31,58 @@ export async function POST(req: Request) {
       );
     }
 
-    // Hash password
     const hashedPassword = await hash(password, 12);
 
-    // Add debug logging
-    console.log("Creating user...");
-
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        password: hashedPassword,
-      },
+    const { data: user, error } = await supabase
+      .from("users")
+      .insert([
+        {
+          email,
+          name,
+          password: hashedPassword,
+          is_verified: false,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Create verification token using the newly created user's ID
+    console.log("Created user:", user);
+    const verificationToken = Buffer.from(`${user.id}-${Date.now()}`).toString(
+      "base64"
+    );
+    console.log("Generated verification token:", verificationToken);
+
+    // Send notification email to admin
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: ADMIN_EMAIL,
+      subject: "New User Registration Requires Verification",
+      html: `
+        <h1>New User Registration</h1>
+        <p>A new user has registered with the following details:</p>
+        <ul>
+          <li>Name: ${name}</li>
+          <li>Email: ${email}</li>          
+          <li>Registration Time: ${new Date().toLocaleString()}</li>
+        </ul>
+        <p>Click the button below to verify this user:</p>
+        <a href="${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify/${verificationToken}" 
+           style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">
+          Verify User
+        </a>
+
+      `,
     });
 
-    // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
-
     return NextResponse.json(userWithoutPassword, { status: 201 });
   } catch (error: any) {
-    // Enhanced error logging
-    console.error("Registration error:", {
-      message: error.message,
-      stack: error.stack,
-      cause: error.cause,
-    });
-
     return NextResponse.json(
-      { message: error.message || "Internal server error" },
+      { message: "Failed to create user" },
       { status: 500 }
     );
   }

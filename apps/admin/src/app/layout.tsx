@@ -1,10 +1,8 @@
+"use client";
+
 import "./globals.css";
 import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Admin Dashboard",
-  description: "E-commerce Admin Dashboard",
-};
+import { Toaster } from "sonner";
 
 export default function RootLayout({
   children,
@@ -13,7 +11,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <Toaster richColors position="top-center" />
+      </body>
     </html>
   );
 }
