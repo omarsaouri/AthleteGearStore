@@ -21,9 +21,9 @@ export default function ProductForm({
   const [formData, setFormData] = useState<CreateProductData>({
     name: initialData?.name || "",
     description: initialData?.description || "",
-    price: initialData?.price || 0,
+    price: initialData?.price?.toString() || "0",
     category: initialData?.category || "",
-    inventory: initialData?.inventory || 0,
+    inventory: initialData?.inventory?.toString() || "0",
     images: initialData?.images || [],
   });
 
@@ -35,14 +35,12 @@ export default function ProductForm({
     const { name, value } = e.target;
 
     if (name === "price" || name === "inventory") {
-      // Handle numeric inputs
-      const numValue = value === "" ? 0 : parseFloat(value);
+      // Only convert to number when submitting the form
       setFormData((prev) => ({
         ...prev,
-        [name]: numValue,
+        [name]: value,
       }));
     } else {
-      // Handle text inputs
       setFormData((prev) => ({
         ...prev,
         [name]: value,
@@ -96,9 +94,18 @@ export default function ProductForm({
     setIsLoading(true);
 
     try {
+      // Convert price and inventory to numbers before sending
+      const submissionData = {
+        ...formData,
+        price: formData.price === "" ? 0 : parseFloat(formData.price as string),
+        inventory:
+          formData.inventory === ""
+            ? 0
+            : parseInt(formData.inventory as string),
+      };
+
       const url =
         mode === "edit" ? `/api/products/${initialData?.id}` : "/api/products";
-
       const method = mode === "edit" ? "PUT" : "POST";
 
       const response = await fetch(url, {
@@ -106,7 +113,7 @@ export default function ProductForm({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submissionData),
       });
 
       if (!response.ok) {

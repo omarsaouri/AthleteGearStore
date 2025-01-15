@@ -44,13 +44,18 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  }, [pathname]);
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/products", label: "Products", icon: Package },
     { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ];
 
   const handleLogout = async () => {
@@ -64,24 +69,30 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Sidebar */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 lg:hidden z-40"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       <aside
-        className={`fixed top-0 left-0 z-40 h-screen transition-transform ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } bg-foreground border-r border-border w-64`}
+        className={`fixed inset-0 lg:inset-auto lg:left-0 lg:w-[280px] z-50 transition-transform duration-300 
+          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
+          lg:translate-x-0 bg-foreground`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4">
+          <div className="flex items-center justify-between p-4 border-b border-border">
             <h1 className="text-xl font-bold text-copy">Admin</h1>
             <button
               onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden text-copy"
+              className="lg:hidden p-2 hover:bg-background rounded-md text-copy"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
             {navLinks.map((link) => (
               <NavLink
                 key={link.href}
@@ -98,7 +109,7 @@ export default function DashboardLayout({
             ))}
           </nav>
 
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border mt-auto">
             <button
               onClick={handleLogout}
               className="flex items-center w-full px-4 py-2 text-sm text-copy hover:bg-primary/10 rounded-md transition-colors"
@@ -110,19 +121,14 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      {/* Main content */}
-      <div
-        className={`lg:ml-64 transition-margin ${
-          isSidebarOpen ? "ml-64" : "ml-0"
-        }`}
-      >
-        <header className="bg-foreground border-b border-border">
-          <div className="flex items-center justify-between p-4">
+      <div className="lg:ml-[280px]">
+        <header className="sticky top-0 z-30 bg-foreground border-b border-border">
+          <div className="flex items-center h-16 px-4">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className={`lg:hidden text-copy ${isSidebarOpen ? "hidden" : ""}`}
+              className="lg:hidden p-2 hover:bg-background rounded-md text-copy"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
           </div>
         </header>

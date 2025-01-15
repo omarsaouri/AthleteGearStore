@@ -31,7 +31,6 @@ export default function DashboardPage() {
   }, []);
 
   const fetchStats = async () => {
-    // Keeping the existing stats logic for now
     setTimeout(() => {
       setStats({
         totalSales: 15420,
@@ -45,13 +44,11 @@ export default function DashboardPage() {
 
   const fetchAlerts = async () => {
     try {
-      // Fetch products and filter for low inventory
       const productsResponse = await fetch("/api/products");
       if (!productsResponse.ok) throw new Error("Failed to fetch products");
       const products: Product[] = await productsResponse.json();
       setLowInventoryProducts(products.filter((p) => p.inventory < 10));
 
-      // Fetch orders and filter for pending
       const ordersResponse = await fetch("/api/orders");
       if (!ordersResponse.ok) throw new Error("Failed to fetch orders");
       const orders: Order[] = await ordersResponse.json();

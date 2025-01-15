@@ -13,8 +13,8 @@ export interface Product {
 export interface CreateProductData {
   name: string;
   description: string;
-  price: number;
+  price: string;
   category: string;
-  inventory: number;
+  inventory: string;
   images: string[];
 }

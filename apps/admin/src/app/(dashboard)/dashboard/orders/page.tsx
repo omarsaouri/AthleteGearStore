@@ -12,6 +12,7 @@ import {
   Mail,
   Phone,
   MapPin,
+  ChevronDown,
 } from "lucide-react";
 import type { Order, OrderStatus } from "@/lib/types/order";
 
@@ -34,6 +35,7 @@ const statusColors = {
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchOrders();
@@ -67,13 +69,23 @@ export default function OrdersPage() {
     }
   };
 
+  const toggleOrderExpansion = (orderId: string) => {
+    const newExpanded = new Set(expandedOrders);
+    if (newExpanded.has(orderId)) {
+      newExpanded.delete(orderId);
+    } else {
+      newExpanded.add(orderId);
+    }
+    setExpandedOrders(newExpanded);
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4">
         {[...Array(3)].map((_, i) => (
           <div
             key={i}
-            className="bg-foreground p-6 rounded-lg border border-border animate-pulse"
+            className="bg-foreground p-4 sm:p-6 rounded-lg border border-border animate-pulse"
           >
             <div className="h-6 bg-border rounded w-1/4 mb-4" />
             <div className="h-4 bg-border rounded w-3/4" />
@@ -84,13 +96,15 @@ export default function OrdersPage() {
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-copy mb-6">Orders</h1>
+    <div className="max-w-[100vw] overflow-x-hidden">
+      <h1 className="text-xl sm:text-2xl font-bold text-copy mb-4 sm:mb-6">
+        Orders
+      </h1>
       <div className="space-y-4">
         {orders.length === 0 ? (
-          <div className="text-center py-12">
-            <AlertCircle className="mx-auto h-12 w-12 text-copy-light" />
-            <h3 className="mt-4 text-lg font-medium text-copy">
+          <div className="text-center py-8 sm:py-12">
+            <AlertCircle className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-copy-light" />
+            <h3 className="mt-4 text-base sm:text-lg font-medium text-copy">
               No orders found
             </h3>
           </div>
@@ -98,11 +112,11 @@ export default function OrdersPage() {
           orders.map((order) => (
             <div
               key={order.id}
-              className="bg-foreground p-6 rounded-lg border border-border"
+              className="bg-foreground p-4 sm:p-6 rounded-lg border border-border"
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                 <div>
-                  <h3 className="text-lg font-medium text-copy">
+                  <h3 className="text-base sm:text-lg font-medium text-copy">
                     {order.customerName}
                   </h3>
                   <p className="text-copy-light text-sm">
@@ -119,7 +133,7 @@ export default function OrdersPage() {
                   } px-3 py-1.5 rounded-full text-sm font-medium appearance-none cursor-pointer
                     border-2 border-transparent hover:border-opacity-50 
                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary/50
-                    transition-colors duration-200
+                    transition-colors duration-200 w-full sm:w-auto
                     pr-8 relative bg-no-repeat bg-[right_0.5rem_center]`}
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
@@ -134,44 +148,58 @@ export default function OrdersPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 text-sm text-copy-light">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
+              <div className="flex flex-col gap-3 mb-4 text-sm text-copy-light">
+                <div className="flex items-center gap-2 break-all">
+                  <Mail className="w-4 h-4 flex-shrink-0" />
                   <span>{order.customerEmail}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
+                  <Phone className="w-4 h-4 flex-shrink-0" />
                   <span>{order.customerPhone}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{order.shippingAddress}</span>
+                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                  <span className="break-words">{order.shippingAddress}</span>
                 </div>
               </div>
 
-              <div className="border-t border-border pt-4">
-                <div className="grid gap-4">
-                  <div className="space-y-2">
-                    {order.items.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between"
-                      >
-                        <p className="text-copy">
-                          {item.productName} ({item.quantity}x)
-                        </p>
-                        <p className="font-medium text-copy">
-                          ${(item.quantity * item.price).toFixed(2)}
-                        </p>
-                      </div>
-                    ))}
-                    <div className="pt-2 border-t border-border">
-                      <div className="flex justify-between">
-                        <p className="font-medium text-copy">Total</p>
-                        <p className="font-bold text-primary">
-                          ${order.totalAmount.toFixed(2)}
-                        </p>
-                      </div>
+              <button
+                onClick={() => toggleOrderExpansion(order.id)}
+                className="w-full py-2 flex items-center justify-center gap-2 text-sm text-copy-light hover:bg-background rounded-md transition-colors sm:hidden"
+              >
+                {expandedOrders.has(order.id) ? "Hide Details" : "Show Details"}
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    expandedOrders.has(order.id) ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              <div
+                className={`border-t border-border pt-4 ${
+                  !expandedOrders.has(order.id) ? "hidden sm:block" : ""
+                }`}
+              >
+                <div className="space-y-2">
+                  {order.items.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between text-sm sm:text-base"
+                    >
+                      <p className="text-copy">
+                        {item.productName} ({item.quantity}x)
+                      </p>
+                      <p className="font-medium text-copy ml-4">
+                        {(item.quantity * item.price).toFixed(2)} DH
+                      </p>
+                    </div>
+                  ))}
+                  <div className="pt-2 border-t border-border">
+                    <div className="flex justify-between">
+                      <p className="font-medium text-copy">Total</p>
+                      <p className="font-bold text-primary">
+                        {order.totalAmount.toFixed(2)} DH
+                      </p>
                     </div>
                   </div>
                 </div>
