@@ -1,19 +1,5 @@
 import { NextResponse } from "next/server";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-
-// Configure S3 client with timeouts
-const s3Client = new S3Client({
-  region: "eu-north-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-  requestHandler: {
-    connectionTimeout: 5000, // 5 seconds
-    socketTimeout: 10000, // 10 seconds
-  },
-  maxAttempts: 3, // Retry up to 3 times
-});
+import { supabase } from "@/lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -24,50 +10,61 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Log file details for debugging
-    console.log("Processing file:", {
-      name: file.name,
-      type: file.type,
-      size: file.size,
-    });
-
-    const buffer = await file.arrayBuffer();
-    const key = `products/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-
+    // First, create the bucket if it doesn't exist
     try {
-      const command = new PutObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME!,
-        Key: key,
-        Body: Buffer.from(buffer),
-        ContentType: file.type,
-        ACL: "public-read",
-      });
+      const { data: bucketData, error: createBucketError } =
+        await supabase.storage.createBucket("products", {
+          public: true,
+          fileSizeLimit: 52428800, // 50MB
+        });
 
-      await s3Client.send(command);
-
-      // Construct the URL using the correct format for eu-north-1
-      const url = `https://${process.env.AWS_BUCKET_NAME}.s3.eu-north-1.amazonaws.com/${key}`;
-
-      // Verify the URL is accessible
-      const checkResponse = await fetch(url, { method: "HEAD" });
-      if (!checkResponse.ok) {
-        throw new Error(`URL verification failed: ${checkResponse.status}`);
+      if (
+        createBucketError &&
+        createBucketError.message !== "Bucket already exists"
+      ) {
+        console.error("Error creating bucket:", createBucketError);
+        throw createBucketError;
       }
+    } catch (bucketError) {
+      console.log("Bucket creation attempted:", bucketError);
+      // Continue if bucket already exists
+    }
 
-      return NextResponse.json({ url });
-    } catch (uploadError) {
-      console.error("S3 upload details:", {
-        bucket: process.env.AWS_BUCKET_NAME,
-        region: "eu-north-1",
-        fileSize: buffer.byteLength,
-        error: uploadError,
+    // Convert file to buffer
+    const buffer = await file.arrayBuffer();
+    const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
+
+    // Upload to Supabase Storage
+    const { data, error: uploadError } = await supabase.storage
+      .from("products")
+      .upload(fileName, buffer, {
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: false,
       });
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
       throw uploadError;
     }
+
+    // Get public URL
+    const { data: publicUrl } = supabase.storage
+      .from("products")
+      .getPublicUrl(fileName);
+
+    console.log("Successfully uploaded file:", publicUrl);
+
+    return NextResponse.json({ url: publicUrl.publicUrl });
   } catch (err: unknown) {
     console.error("Upload error details:", err);
-    const errorMessage =
-      err instanceof Error ? err.message : "Failed to upload file";
+    let errorMessage = "Failed to upload file";
+
+    if (err instanceof Error) {
+      errorMessage = `Upload failed: ${err.message}`;
+      console.error("Error stack:", err.stack);
+    }
+
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

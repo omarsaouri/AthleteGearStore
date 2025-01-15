@@ -6,7 +6,12 @@ import {
   ShoppingBag,
   ShoppingCart,
   TrendingUp,
+  AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
+import Link from "next/link";
+import type { Product } from "@/lib/types/product";
+import type { Order } from "@/lib/types/order";
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -16,10 +21,17 @@ export default function DashboardPage() {
     totalProducts: 0,
     growthRate: 0,
   });
+  const [lowInventoryProducts, setLowInventoryProducts] = useState<Product[]>(
+    []
+  );
+  const [pendingOrders, setPendingOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    // TODO: Fetch actual stats from your API
-    // Simulated API call
+    Promise.all([fetchStats(), fetchAlerts()]);
+  }, []);
+
+  const fetchStats = async () => {
+    // Keeping the existing stats logic for now
     setTimeout(() => {
       setStats({
         totalSales: 15420,
@@ -29,7 +41,25 @@ export default function DashboardPage() {
       });
       setIsLoading(false);
     }, 1000);
-  }, []);
+  };
+
+  const fetchAlerts = async () => {
+    try {
+      // Fetch products and filter for low inventory
+      const productsResponse = await fetch("/api/products");
+      if (!productsResponse.ok) throw new Error("Failed to fetch products");
+      const products: Product[] = await productsResponse.json();
+      setLowInventoryProducts(products.filter((p) => p.inventory < 10));
+
+      // Fetch orders and filter for pending
+      const ordersResponse = await fetch("/api/orders");
+      if (!ordersResponse.ok) throw new Error("Failed to fetch orders");
+      const orders: Order[] = await ordersResponse.json();
+      setPendingOrders(orders.filter((o) => o.status === "pending"));
+    } catch (error) {
+      toast.error("Failed to load alerts");
+    }
+  };
 
   const StatCard = ({
     title,
@@ -56,6 +86,22 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+    </div>
+  );
+
+  const AlertSection = ({
+    title,
+    children,
+  }: {
+    title: string;
+    children: React.ReactNode;
+  }) => (
+    <div className="bg-foreground p-6 rounded-lg border border-border">
+      <div className="flex items-center gap-2 mb-4">
+        <AlertCircle className="w-5 h-5 text-warning" />
+        <h2 className="text-lg font-semibold text-copy">{title}</h2>
+      </div>
+      {children}
     </div>
   );
 
@@ -90,21 +136,63 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Placeholder for future components */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-foreground p-6 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-copy mb-4">
-            Recent Orders
-          </h2>
-          <p className="text-copy-light">Coming soon...</p>
-        </div>
+        <AlertSection title="Low Inventory Products">
+          {lowInventoryProducts.length === 0 ? (
+            <p className="text-copy-light">No products with low inventory</p>
+          ) : (
+            <div className="space-y-3">
+              {lowInventoryProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  href={`/dashboard/products/${product.id}`}
+                  className="block p-3 rounded-md bg-background hover:bg-border transition-colors"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium text-copy">{product.name}</p>
+                      <p className="text-sm text-copy-light">
+                        Only {product.inventory} items left
+                      </p>
+                    </div>
+                    <span className="text-warning font-medium">Low Stock</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </AlertSection>
 
-        <div className="bg-foreground p-6 rounded-lg border border-border">
-          <h2 className="text-lg font-semibold text-copy mb-4">
-            Popular Products
-          </h2>
-          <p className="text-copy-light">Coming soon...</p>
-        </div>
+        <AlertSection title="Pending Orders">
+          {pendingOrders.length === 0 ? (
+            <p className="text-copy-light">No pending orders</p>
+          ) : (
+            <div className="space-y-3">
+              {pendingOrders.map((order) => (
+                <Link
+                  key={order.id}
+                  href="/dashboard/orders"
+                  className="block p-3 rounded-md bg-background hover:bg-border transition-colors"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium text-copy">
+                        {order.customerName}
+                      </p>
+                      <p className="text-sm text-copy-light">
+                        ${order.totalAmount.toFixed(2)} - {order.items.length}{" "}
+                        items
+                      </p>
+                    </div>
+                    <span className="text-warning font-medium">
+                      Pending Review
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </AlertSection>
       </div>
     </div>
   );

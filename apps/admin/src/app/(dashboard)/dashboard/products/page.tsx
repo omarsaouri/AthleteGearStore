@@ -106,7 +106,7 @@ export default function ProductsPage() {
               <h3 className="font-medium text-copy mb-2">{product.name}</h3>
               <div className="flex justify-between items-center">
                 <span className="text-primary font-medium">
-                  ${product.price.toFixed(2)}
+                  {product.price.toFixed(2)} DH
                 </span>
                 <span className="text-copy-light text-sm">
                   Stock: {product.inventory}
