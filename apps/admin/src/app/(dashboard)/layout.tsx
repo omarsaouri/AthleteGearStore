@@ -13,6 +13,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface NavLinkProps {
   href: string;
@@ -60,10 +61,22 @@ export default function DashboardLayout({
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/login");
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to logout");
+      }
+
+      // Force a hard reload to clear any client state
+      window.location.href = "/login";
     } catch (error) {
       console.error("Logout failed:", error);
+      toast.error("Failed to logout");
     }
   };
 
@@ -77,13 +90,13 @@ export default function DashboardLayout({
       )}
 
       <aside
-        className={`fixed inset-0 lg:inset-auto lg:left-0 lg:w-[280px] z-50 transition-transform duration-300 
+        className={`fixed inset-0 lg:inset-y-0 lg:left-0 lg:w-[280px] z-50 transition-transform duration-300 
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          lg:translate-x-0 bg-foreground`}
+          lg:translate-x-0 bg-foreground h-screen`}
       >
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between p-4 border-b border-border">
-            <h1 className="text-xl font-bold text-copy">Admin</h1>
+            <h1 className="text-xl font-bold text-copy pb-1">Admin</h1>
             <button
               onClick={() => setIsSidebarOpen(false)}
               className="lg:hidden p-2 hover:bg-background rounded-md text-copy"

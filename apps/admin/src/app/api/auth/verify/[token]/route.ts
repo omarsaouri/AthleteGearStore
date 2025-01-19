@@ -72,6 +72,15 @@ export async function GET(
         <head>
           <title>User Verification</title>
           <style>
+            :root {
+              --background: #181b18;
+              --foreground: #232924;
+              --border: #3b453c;
+              --primary: #a1cca5;
+              --copy: #fbfbfb;
+              --copy-light: #d6dcd6;
+            }
+
             body {
               font-family: Arial, sans-serif;
               display: flex;
@@ -79,27 +88,50 @@ export async function GET(
               align-items: center;
               height: 100vh;
               margin: 0;
-              background-color: #f5f5f5;
+              background-color: var(--background);
+              color: var(--copy);
             }
+
             .container {
               text-align: center;
-              padding: 2rem;
-              background-color: white;
-              border-radius: 8px;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              padding: 2.5rem;
+              background-color: var(--foreground);
+              border-radius: 0.75rem;
+              border: 1px solid var(--border);
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+              max-width: 400px;
+              width: 90%;
             }
+
             .success {
-              color: #28a745;
-              font-size: 1.2rem;
+              color: var(--primary);
+              font-size: 1.5rem;
+              font-weight: 600;
+              margin-bottom: 1.5rem;
+            }
+
+            .message {
+              color: var(--copy-light);
               margin-bottom: 1rem;
+              line-height: 1.5;
+            }
+
+            .icon {
+              width: 48px;
+              height: 48px;
+              margin-bottom: 1.5rem;
+              color: var(--primary);
             }
           </style>
         </head>
         <body>
           <div class="container">
-            <h1 class="success">✅ User Verified Successfully!</h1>
-            <p>User verification status has been updated.</p>
-            <p>You can close this window now.</p>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h1 class="success">User Verified Successfully!</h1>
+            <p class="message">The new user account has been verified and activated.</p>
+            <p class="message">You can now close this window.</p>
           </div>
         </body>
       </html>

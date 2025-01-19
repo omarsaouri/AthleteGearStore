@@ -62,19 +62,26 @@ export async function POST(req: Request) {
       to: ADMIN_EMAIL,
       subject: "New User Registration Requires Verification",
       html: `
-        <h1>New User Registration</h1>
-        <p>A new user has registered with the following details:</p>
-        <ul>
-          <li>Name: ${name}</li>
-          <li>Email: ${email}</li>          
-          <li>Registration Time: ${new Date().toLocaleString()}</li>
-        </ul>
-        <p>Click the button below to verify this user:</p>
-        <a href="${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify/${verificationToken}" 
-           style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">
-          Verify User
-        </a>
-
+        <div style="background-color: #f9fafb; padding: 40px 0;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: white; padding: 32px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+            <h1 style="color: #111827; font-size: 24px; font-weight: 600; margin-bottom: 24px;">New User Registration</h1>
+            
+            <div style="background-color: #f3f4f6; padding: 16px; border-radius: 6px; margin-bottom: 24px;">
+              <p style="color: #374151; font-size: 16px; margin-bottom: 16px;">A new user has registered with the following details:</p>
+              <ul style="list-style: none; padding: 0; margin: 0;">
+                <li style="color: #4b5563; margin-bottom: 8px;">Name: <span style="color: #111827; font-weight: 500;">${name}</span></li>
+                <li style="color: #4b5563; margin-bottom: 8px;">Email: <span style="color: #111827; font-weight: 500;">${email}</span></li>
+                <li style="color: #4b5563;">Registration Time: <span style="color: #111827; font-weight: 500;">${new Date().toLocaleString()}</span></li>
+              </ul>
+            </div>
+            
+            <p style="color: #374151; font-size: 16px; margin-bottom: 24px;">Click the button below to verify this user:</p>
+            <a href="${process.env.NEXT_PUBLIC_APP_URL}/api/auth/verify/${verificationToken}" 
+               style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 500; font-size: 16px;">
+              Verify User
+            </a>
+          </div>
+        </div>
       `,
     });
 

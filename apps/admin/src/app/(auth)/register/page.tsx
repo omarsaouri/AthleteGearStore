@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import axios from "axios";
 import { toast } from "sonner";
 
@@ -13,6 +14,21 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/check");
+        if (response.ok) {
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        // User is not authenticated, stay on register page
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,6 +202,15 @@ export default function RegisterPage() {
               )}
             </button>
           </form>
+          <div className="mt-4 text-center text-sm text-copy-light">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-primary hover:text-primary-light transition-colors"
+            >
+              Sign in
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -13,6 +13,7 @@ import {
   Phone,
   MapPin,
   ChevronDown,
+  Filter,
 } from "lucide-react";
 import type { Order, OrderStatus } from "@/lib/types/order";
 
@@ -32,10 +33,20 @@ const statusColors = {
   cancelled: "bg-red-100 text-red-800",
 };
 
+type FilterOption = "all" | "active" | "completed" | "cancelled";
+
+const filterOptions: { value: FilterOption; label: string }[] = [
+  { value: "all", label: "All Orders" },
+  { value: "active", label: "Active Orders" },
+  { value: "completed", label: "Completed Orders" },
+  { value: "cancelled", label: "Cancelled Orders" },
+];
+
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set());
+  const [filterType, setFilterType] = useState<FilterOption>("active");
 
   useEffect(() => {
     fetchOrders();
@@ -79,6 +90,19 @@ export default function OrdersPage() {
     setExpandedOrders(newExpanded);
   };
 
+  const filteredOrders = orders.filter((order) => {
+    switch (filterType) {
+      case "active":
+        return ["pending", "processing", "shipped"].includes(order.status);
+      case "completed":
+        return order.status === "delivered";
+      case "cancelled":
+        return order.status === "cancelled";
+      default:
+        return true;
+    }
+  });
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -97,19 +121,53 @@ export default function OrdersPage() {
 
   return (
     <div className="max-w-[100vw] overflow-x-hidden">
-      <h1 className="text-xl sm:text-2xl font-bold text-copy mb-4 sm:mb-6">
-        Orders
-      </h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-copy">Orders</h1>
+
+        <div className="relative w-full sm:w-auto">
+          <div className="flex items-center gap-2 bg-foreground border border-border rounded-md px-4 py-3 sm:py-2 w-full sm:w-auto cursor-pointer">
+            <Filter className="w-5 h-5 sm:w-4 sm:h-4 text-copy-light" />
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as FilterOption)}
+              className="appearance-none bg-transparent text-copy w-full sm:w-auto text-base sm:text-sm focus:outline-none cursor-pointer"
+            >
+              {filterOptions.map((option) => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                  className="bg-foreground text-copy"
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-5 h-5 sm:w-4 sm:h-4 text-copy-light ml-auto sm:ml-2" />
+          </div>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        {orders.length === 0 ? (
-          <div className="text-center py-8 sm:py-12">
+        {filteredOrders.length === 0 ? (
+          <div className="text-center py-8 sm:py-12 bg-foreground rounded-lg border border-border">
             <AlertCircle className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-copy-light" />
             <h3 className="mt-4 text-base sm:text-lg font-medium text-copy">
-              No orders found
+              {filterType === "all"
+                ? "No orders found"
+                : filterType === "active"
+                  ? "No active orders"
+                  : filterType === "completed"
+                    ? "No completed orders"
+                    : "No cancelled orders"}
             </h3>
+            {filterType !== "all" && (
+              <p className="mt-2 text-copy-light">
+                Try changing the filter to see different orders
+              </p>
+            )}
           </div>
         ) : (
-          orders.map((order) => (
+          filteredOrders.map((order) => (
             <div
               key={order.id}
               className="bg-foreground p-4 sm:p-6 rounded-lg border border-border"
