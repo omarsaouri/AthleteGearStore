@@ -30,15 +30,19 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check if user is verified
+    // Check if user is verified first
     if (!user.is_verified) {
       return NextResponse.json(
-        { message: "Please verify your account before logging in" },
+        {
+          message: "Account pending verification",
+          status: "unverified",
+          email: user.email,
+        },
         { status: 403 }
       );
     }
 
-    // Verify password
+    // Then verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(

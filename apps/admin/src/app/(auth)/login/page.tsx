@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [showVerificationCheck, setShowVerificationCheck] = useState(false);
+  const [isCheckingVerification, setIsCheckingVerification] = useState(false);
 
   useEffect(() => {
     // Check if user is already logged in
@@ -48,10 +50,16 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } catch (error: any) {
-      console.error("Login error:", error);
-      const errorMessage =
-        error.response?.data?.message || error.message || "Login failed";
-      toast.error(errorMessage);
+      if (
+        error.response?.status === 403 &&
+        error.response?.data?.status === "unverified"
+      ) {
+        setShowVerificationCheck(true);
+        toast.info("Your account is pending verification");
+      } else {
+        const errorMessage = error.response?.data?.message || "Login failed";
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +92,70 @@ export default function LoginPage() {
       setIsResettingPassword(false);
     }
   };
+
+  const handleCheckVerification = async () => {
+    setIsCheckingVerification(true);
+    try {
+      const response = await axios.post("/api/auth/check-verification", {
+        email,
+      });
+
+      if (response.data.verified) {
+        toast.success("Your account has been verified! You can now log in.");
+        setShowVerificationCheck(false);
+      } else {
+        toast.info("Your account is still pending verification.");
+      }
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        toast.error("Please wait before checking again");
+      } else {
+        toast.error("Failed to check verification status");
+      }
+    } finally {
+      setIsCheckingVerification(false);
+    }
+  };
+
+  if (showVerificationCheck) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="w-full max-w-[400px] bg-foreground rounded-lg shadow-md border border-border">
+          <div className="p-4 sm:p-6 border-b border-border">
+            <h2 className="text-xl sm:text-2xl font-bold text-copy">
+              Account Pending Verification
+            </h2>
+            <p className="text-xs sm:text-sm text-copy-light">
+              Your account is awaiting verification
+            </p>
+          </div>
+          <div className="p-4 sm:p-6 space-y-4">
+            <p className="text-copy-light">
+              Your registration is being reviewed by our admin team. You can
+              check your verification status below.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleCheckVerification}
+                disabled={isCheckingVerification}
+                className="flex-1 py-2 px-4 bg-primary hover:bg-primary-light text-primary-content font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCheckingVerification
+                  ? "Checking..."
+                  : "Check Verification Status"}
+              </button>
+              <button
+                onClick={() => setShowVerificationCheck(false)}
+                className="flex-1 py-2 px-4 bg-background text-copy border border-border hover:bg-border rounded-md transition-colors"
+              >
+                Back to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (showForgotPassword) {
     return (
