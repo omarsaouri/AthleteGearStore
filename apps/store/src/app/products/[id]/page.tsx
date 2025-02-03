@@ -37,27 +37,26 @@ export default function ProductDetailsPage() {
         if (!response.ok) throw new Error("Product not found");
         const data = await response.json();
         setProduct(data);
-        // Set default selected size if available
+        // Initialize with first size if available
         if (data.sizes && data.sizes.length > 0) {
           setSelectedSize(data.sizes[0]);
         }
       } catch (error) {
-        toast.error(t("products.notFound"));
-        router.push("/products");
+        console.error("Failed to load product:", error);
+        toast.error("Failed to load product");
       } finally {
         setIsLoading(false);
       }
     }
-
     loadProduct();
-  }, [params.id, router, t]);
+  }, [params.id]);
 
   const handleAddToCart = () => {
     if (!product) return;
 
-    // Check if product has sizes but no size is selected
-    if (product.sizes?.length > 0 && !selectedSize) {
-      toast.error(t("products.sizeRequired"));
+    // Check if product has sizes and requires size selection
+    if (product.sizes && product.sizes.length > 0 && !selectedSize) {
+      toast.error("Please select a size");
       return;
     }
 
@@ -65,7 +64,7 @@ export default function ProductDetailsPage() {
       ...product,
       selectedSize,
     });
-    toast.success(t("products.addedToCart"));
+    toast.success("Added to cart");
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -224,17 +223,18 @@ export default function ProductDetailsPage() {
             </p>
             <p className="text-copy-light mb-8">{product.description}</p>
 
+            {/* Only show sizes section if product has sizes */}
             {product.sizes && product.sizes.length > 0 && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-copy-light mb-2">
-                  {t("products.selectSize")}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-copy">
+                  Select Size
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.sizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 rounded-md border ${
+                      className={`px-4 py-2 text-sm font-medium rounded-md border ${
                         selectedSize === size
                           ? "border-primary bg-primary text-primary-content"
                           : "border-border text-copy hover:border-primary"
@@ -249,7 +249,7 @@ export default function ProductDetailsPage() {
 
             <button
               onClick={handleAddToCart}
-              className="w-full sm:w-auto px-6 py-3 bg-primary text-primary-content rounded-md hover:bg-primary-light transition-colors"
+              className="w-full sm:w-auto mt-8 px-6 py-3 bg-primary text-primary-content rounded-md hover:bg-primary-light transition-colors"
             >
               {t("products.addToCart")}
             </button>

@@ -10,6 +10,7 @@ interface EmailInputProps {
   required?: boolean;
   placeholder?: string;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function EmailInput({
@@ -18,6 +19,7 @@ export function EmailInput({
   required = false,
   placeholder = "Email",
   className = "",
+  style,
 }: EmailInputProps) {
   const [isValid, setIsValid] = useState(true);
 
@@ -43,6 +45,7 @@ export function EmailInput({
         className={`${className} ${
           !isValid ? "border-error focus:ring-error" : ""
         }`}
+        style={style}
       />
       {!isValid && (
         <p className="absolute text-xs text-error mt-1">

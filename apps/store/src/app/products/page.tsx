@@ -26,7 +26,7 @@ export default function ProductsPage() {
         setProducts(data);
       } catch (error) {
         console.error("Failed to load products:", error);
-        // You might want to show an error message to the user here
+        toast.error("Failed to load products");
       } finally {
         setIsLoading(false);
       }
@@ -45,7 +45,7 @@ export default function ProductsPage() {
       return;
     }
 
-    if (product.sizes?.length > 0) {
+    if (product.sizes && product.sizes.length > 0) {
       router.push(`/products/${product.id}`);
       toast.info(t("products.selectSizeFirst"));
       return;

@@ -81,7 +81,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-full flex bg-background">
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 lg:hidden z-40"
@@ -90,21 +90,21 @@ export default function DashboardLayout({
       )}
 
       <aside
-        className={`fixed inset-0 lg:inset-y-0 lg:left-0 lg:w-[280px] z-50 transition-transform duration-300 
+        className={`fixed inset-0 w-full lg:w-72 z-50 transition-transform duration-300 
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          lg:translate-x-0 bg-foreground flex flex-col max-h-screen`}
+          lg:translate-x-0 bg-foreground flex flex-col border-r border-border`}
       >
-        <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
+        <header className="h-16 border-b border-border flex items-center px-6">
           <h1 className="text-xl font-bold text-copy">Admin</h1>
           <button
             onClick={() => setIsSidebarOpen(false)}
-            className="lg:hidden p-2 hover:bg-background rounded-md text-copy"
+            className="lg:hidden p-2 hover:bg-background rounded-md text-copy ml-auto"
           >
             <X className="w-5 h-5" />
           </button>
-        </div>
+        </header>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-6 py-4 space-y-1 overflow-y-auto">
           {navLinks.map((link) => (
             <NavLink
               key={link.href}
@@ -121,7 +121,7 @@ export default function DashboardLayout({
           ))}
         </nav>
 
-        <div className="p-4 border-t border-border shrink-0">
+        <div className="px-6 py-4 border-t border-border">
           <button
             onClick={handleLogout}
             className="flex items-center w-full px-4 py-2 text-sm text-copy hover:bg-primary/10 rounded-md transition-colors"
@@ -132,9 +132,9 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <div className="lg:ml-[280px]">
-        <header className="sticky top-0 z-30 bg-foreground border-b border-border">
-          <div className="flex items-center h-16 px-4">
+      <main className="flex-1 lg:ml-72 min-h-full w-full">
+        <header className="sticky top-0 z-30 h-16 bg-foreground border-b border-border">
+          <div className="h-full flex items-center px-6">
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden p-2 hover:bg-background rounded-md text-copy"
@@ -143,8 +143,8 @@ export default function DashboardLayout({
             </button>
           </div>
         </header>
-        <main className="p-4 md:p-6">{children}</main>
-      </div>
+        <div className="p-4 sm:p-6">{children}</div>
+      </main>
     </div>
   );
 }
