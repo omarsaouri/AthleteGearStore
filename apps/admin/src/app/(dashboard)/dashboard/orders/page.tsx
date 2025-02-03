@@ -207,10 +207,6 @@ export default function OrdersPage() {
               </div>
 
               <div className="flex flex-col gap-3 mb-4 text-sm text-copy-light">
-                <div className="flex items-center gap-2 break-all">
-                  <Mail className="w-4 h-4 flex-shrink-0" />
-                  <span>{order.customerEmail}</span>
-                </div>
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4 flex-shrink-0" />
                   <span>{order.customerPhone}</span>
@@ -244,9 +240,16 @@ export default function OrdersPage() {
                       key={index}
                       className="flex items-center justify-between text-sm sm:text-base"
                     >
-                      <p className="text-copy">
-                        {item.productName} ({item.quantity}x)
-                      </p>
+                      <div className="flex-1">
+                        <p className="text-copy">
+                          {item.productName} ({item.quantity}x)
+                          {item.selectedSize && (
+                            <span className="ml-2 text-copy-light">
+                              Size: {item.selectedSize}
+                            </span>
+                          )}
+                        </p>
+                      </div>
                       <p className="font-medium text-copy ml-4">
                         {(item.quantity * item.price).toFixed(2)} DH
                       </p>

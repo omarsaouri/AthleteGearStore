@@ -2,47 +2,71 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import type { CreateProductData } from "@/lib/types/product";
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const data: CreateProductData = await req.json();
+    const data = await request.json();
 
-    // Validate required fields
-    if (!data.name || !data.price || !data.category) {
-      return NextResponse.json(
-        { message: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Insert product into database
     const { data: product, error } = await supabase
       .from("products")
       .insert([
         {
           name: data.name,
           description: data.description,
-          price: data.price,
+          price: parseFloat(data.price),
+          sale_price: data.salePrice ? parseFloat(data.salePrice) : null,
+          on_sale: data.onSale,
           category: data.category,
-          inventory: data.inventory,
+          inventory: parseInt(data.inventory),
           images: data.images,
+          sizes: data.sizes,
         },
       ])
       .select()
       .single();
 
-    if (error) {
-      console.error("Error creating product:", error);
-      return NextResponse.json(
-        { message: "Failed to create product" },
-        { status: 500 }
-      );
-    }
+    if (error) throw error;
 
-    return NextResponse.json(product, { status: 201 });
+    return NextResponse.json(product);
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error creating product:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: "Failed to create product" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const data = await request.json();
+    const { id, ...updateData } = data;
+
+    const { data: product, error } = await supabase
+      .from("products")
+      .update({
+        name: updateData.name,
+        description: updateData.description,
+        price: parseFloat(updateData.price),
+        sale_price: updateData.salePrice
+          ? parseFloat(updateData.salePrice)
+          : null,
+        on_sale: updateData.onSale,
+        category: updateData.category,
+        inventory: parseInt(updateData.inventory),
+        images: updateData.images,
+        sizes: updateData.sizes,
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json(product);
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return NextResponse.json(
+      { message: "Failed to update product" },
       { status: 500 }
     );
   }

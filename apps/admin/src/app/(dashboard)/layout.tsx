@@ -92,45 +92,43 @@ export default function DashboardLayout({
       <aside
         className={`fixed inset-0 lg:inset-y-0 lg:left-0 lg:w-[280px] z-50 transition-transform duration-300 
           ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          lg:translate-x-0 bg-foreground h-screen`}
+          lg:translate-x-0 bg-foreground flex flex-col max-h-screen`}
       >
-        <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-border">
-            <h1 className="text-xl font-bold text-copy pb-1">Admin</h1>
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden p-2 hover:bg-background rounded-md text-copy"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+        <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
+          <h1 className="text-xl font-bold text-copy">Admin</h1>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="lg:hidden p-2 hover:bg-background rounded-md text-copy"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.href}
-                href={link.href}
-                icon={link.icon}
-                isActive={
-                  link.href === "/dashboard"
-                    ? pathname === "/dashboard"
-                    : pathname?.startsWith(link.href)
-                }
-              >
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="p-4 border-t border-border mt-auto">
-            <button
-              onClick={handleLogout}
-              className="flex items-center w-full px-4 py-2 text-sm text-copy hover:bg-primary/10 rounded-md transition-colors"
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.href}
+              href={link.href}
+              icon={link.icon}
+              isActive={
+                link.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname?.startsWith(link.href)
+              }
             >
-              <LogOut className="w-5 h-5 mr-3" />
-              Logout
-            </button>
-          </div>
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-border shrink-0">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-2 text-sm text-copy hover:bg-primary/10 rounded-md transition-colors"
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            Logout
+          </button>
         </div>
       </aside>
 

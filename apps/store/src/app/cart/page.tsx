@@ -35,7 +35,7 @@ export default function CartPage() {
         <div className="space-y-4">
           {items.map((item) => (
             <div
-              key={item.id}
+              key={`${item.id}-${item.selectedSize}`}
               className="bg-foreground p-4 rounded-lg border border-border"
             >
               <div className="grid grid-cols-[80px_1fr_auto_auto] sm:grid-cols-[80px_2fr_auto_auto] items-center gap-4">
@@ -51,6 +51,11 @@ export default function CartPage() {
                 <div>
                   <h3 className="font-medium text-copy line-clamp-1">
                     {item.name}
+                    {item.selectedSize && (
+                      <span className="ml-2 text-copy-light">
+                        ({t("cart.size")}: {item.selectedSize})
+                      </span>
+                    )}
                   </h3>
                   <p className="text-primary font-semibold">
                     {item.price.toFixed(2)} DH
@@ -59,7 +64,11 @@ export default function CartPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() =>
-                      updateQuantity(item.id, Math.max(1, item.quantity - 1))
+                      updateQuantity(
+                        item.id,
+                        Math.max(1, item.quantity - 1),
+                        item.selectedSize
+                      )
                     }
                     className="p-1 hover:bg-background rounded"
                   >
@@ -67,14 +76,20 @@ export default function CartPage() {
                   </button>
                   <span className="w-8 text-center">{item.quantity}</span>
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    onClick={() =>
+                      updateQuantity(
+                        item.id,
+                        item.quantity + 1,
+                        item.selectedSize
+                      )
+                    }
                     className="p-1 hover:bg-background rounded"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
                 <button
-                  onClick={() => removeItem(item.id)}
+                  onClick={() => removeItem(item.id, item.selectedSize)}
                   className="p-2 hover:bg-background rounded"
                 >
                   <Trash2 className="w-5 h-5 text-red-500" />

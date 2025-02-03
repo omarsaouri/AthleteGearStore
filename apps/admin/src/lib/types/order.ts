@@ -10,6 +10,7 @@ export interface OrderItem {
   productName: string;
   quantity: number;
   price: number;
+  selectedSize?: string;
   image?: string;
 }
 

@@ -6,40 +6,29 @@ import { useCart } from "@/lib/context/CartContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { toast } from "sonner";
 
-interface CheckoutForm {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-}
-
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { t } = useLanguage();
   const { items, totalAmount, clearCart } = useCart();
+  const { t } = useLanguage();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState<CheckoutForm>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-  });
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !isSubmitting) {
       router.push("/cart");
     }
-  }, [items.length, router]);
+  }, [items.length, router, isSubmitting]);
 
-  if (items.length === 0) {
-    return null;
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const formData = new FormData(e.currentTarget);
+    const orderData = {
+      customerName: formData.get("firstName") + " " + formData.get("lastName"),
+      customerPhone: formData.get("phone"),
+      shippingAddress: formData.get("address"),
+      items: items,
+    };
 
     try {
       const response = await fetch("/api/orders", {
@@ -47,112 +36,97 @@ export default function CheckoutPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          customer_name: `${form.firstName} ${form.lastName}`,
-          customer_email: form.email,
-          customer_phone: form.phone,
-          shipping_address: form.address,
-          items: items.map((item) => ({
-            product_id: item.id,
-            productName: item.name,
-            quantity: item.quantity,
-            price: item.price,
-          })),
-          total_amount: totalAmount,
-          status: "pending",
-        }),
+        body: JSON.stringify(orderData),
       });
 
-      if (!response.ok) throw new Error("Failed to create order");
+      const data = await response.json();
 
-      // First clear the cart
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong");
+      }
+
       clearCart();
-      // Show success message
-      toast.success(t("checkout.success"));
-      // Wait a moment before redirecting
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      // Then redirect
       window.location.href = "/checkout/success";
     } catch (error) {
+      console.error("Checkout error:", error);
       toast.error(t("checkout.error"));
-    } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (items.length === 0 && !isSubmitting) {
+    return null;
+  }
+
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="max-w-2xl mx-auto px-4">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-copy mb-8">
           {t("checkout.title")}
         </h1>
-
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-copy mb-2">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-copy-light mb-2"
+              >
                 {t("checkout.firstName")}
               </label>
               <input
                 type="text"
+                id="firstName"
+                name="firstName"
                 required
-                value={form.firstName}
-                onChange={(e) =>
-                  setForm({ ...form, firstName: e.target.value })
-                }
-                className="w-full px-4 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-copy"
+                className="w-full px-3 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-copy"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-copy mb-2">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-copy-light mb-2"
+              >
                 {t("checkout.lastName")}
               </label>
               <input
                 type="text"
+                id="lastName"
+                name="lastName"
                 required
-                value={form.lastName}
-                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                className="w-full px-4 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-copy"
+                className="w-full px-3 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-copy"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-copy mb-2">
-              {t("checkout.email")}
-            </label>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full px-4 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-copy"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-copy mb-2">
+            <label
+              htmlFor="phone"
+              className="block text-sm font-medium text-copy-light mb-2"
+            >
               {t("checkout.phone")}
             </label>
             <input
               type="tel"
+              id="phone"
+              name="phone"
               required
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full px-4 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-copy"
+              className="w-full px-3 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-copy"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-copy mb-2">
+            <label
+              htmlFor="address"
+              className="block text-sm font-medium text-copy-light mb-2"
+            >
               {t("checkout.address")}
             </label>
             <textarea
+              id="address"
+              name="address"
               required
-              value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })}
               rows={3}
-              className="w-full px-4 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50 text-copy"
+              className="w-full px-3 py-2 bg-foreground border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-copy"
             />
           </div>
 

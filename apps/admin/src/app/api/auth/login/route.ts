@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const { email, password, rememberMe } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Then verify password
+    // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return NextResponse.json(
@@ -50,6 +50,9 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
+
+    // Set token expiration based on rememberMe
+    const expiresIn = rememberMe ? "30d" : "24h";
 
     // Create JWT token
     const token = jwt.sign(
@@ -59,10 +62,9 @@ export async function POST(req: Request) {
         name: user.name,
       },
       JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn }
     );
 
-    // Create HTTP-only cookie with the JWT
     const response = NextResponse.json(
       {
         message: "Login successful",
@@ -75,7 +77,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
 
-    // Set the JWT as an HTTP-only cookie
+    // Set the JWT as an HTTP-only cookie with dynamic expiration
     response.cookies.set({
       name: "token",
       value: token,
@@ -83,7 +85,7 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24, // 24 hours
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60, // 30 days or 24 hours
     });
 
     return response;

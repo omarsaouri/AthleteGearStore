@@ -16,10 +16,9 @@ export default function CheckoutSuccessPage() {
         <h1 className="text-2xl font-bold text-copy mb-4">
           {t("checkout.successTitle")}
         </h1>
-        <div className="space-y-4 mb-8 text-copy-light">
+        <div className="space-y-4 mb-8 text-copy">
           <p>{t("checkout.successMessage")}</p>
-          <p>{t("checkout.phoneContact")}</p>
-          <p>{t("checkout.emailConfirmation")}</p>
+          <p className="text-copy-light">{t("checkout.phoneContact")}</p>
         </div>
         <Link
           href="/products"

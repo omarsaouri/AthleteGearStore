@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { updateInventory } from "@/lib/inventory/updateInventory";
 
 export async function PATCH(
   request: Request,
@@ -8,23 +9,32 @@ export async function PATCH(
   try {
     const { status } = await request.json();
 
-    const { data: order, error } = await supabase
+    // Get the current order to check previous status
+    const { data: currentOrder, error: fetchError } = await supabase
       .from("orders")
-      .update({
-        status,
-        updated_at: new Date().toISOString(),
-      })
+      .select("*")
+      .eq("id", params.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Update order status
+    const { data: order, error: updateError } = await supabase
+      .from("orders")
+      .update({ status })
       .eq("id", params.id)
       .select()
       .single();
 
-    if (error) {
-      console.error("Supabase error:", error);
-      throw error;
-    }
+    if (updateError) throw updateError;
 
-    if (!order) {
-      return NextResponse.json({ message: "Order not found" }, { status: 404 });
+    // Handle inventory updates
+    if (status === "delivered" && currentOrder.status !== "delivered") {
+      // Decrease inventory when order is marked as delivered
+      await updateInventory(order.items);
+    } else if (currentOrder.status === "delivered" && status !== "delivered") {
+      // Increase inventory when order is un-marked as delivered
+      await updateInventory(order.items, true);
     }
 
     return NextResponse.json(order);

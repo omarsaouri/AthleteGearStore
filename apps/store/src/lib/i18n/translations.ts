@@ -34,6 +34,11 @@ export const translations = {
       addedToCart: "Ajouté au panier avec succès!",
       backToProducts: "Retour aux produits",
       notFound: "Produit non trouvé",
+      selectSize: "Sélectionnez une taille",
+      sizeRequired: "Veuillez sélectionner une taille",
+      selectSizeFirst: "Cet article nécessite une sélection de taille",
+      outOfStock: "En Rupture de Stock",
+      onSale: "Sale",
     },
     cart: {
       title: "Panier",
@@ -43,6 +48,7 @@ export const translations = {
       continueShopping: "Continuer vos achats",
       total: "Total",
       checkout: "Passer à la caisse",
+      size: "Taille",
     },
     checkout: {
       title: "Commander",
@@ -57,8 +63,7 @@ export const translations = {
       success: "Commande passée avec succès !",
       error: "Échec de la commande",
       successTitle: "Commande Confirmée !",
-      successMessage:
-        "Merci pour votre achat. Nous vous enverrons un email avec les détails de votre commande.",
+      successMessage: "Merci pour votre achat.",
       continueShopping: "Continuer vos achats",
       phoneContact:
         "Nous vous contacterons sur votre numéro de téléphone pour confirmer votre commande. Si nous ne parvenons pas à vous joindre après deux tentatives, votre commande sera annulée.",
@@ -99,6 +104,11 @@ export const translations = {
       addedToCart: "Added to cart successfully!",
       backToProducts: "Back to Products",
       notFound: "Product not found",
+      selectSize: "Select Size",
+      sizeRequired: "Please select a size",
+      selectSizeFirst: "This item requires size selection",
+      outOfStock: "Out of Stock",
+      onSale: "Sale",
     },
     cart: {
       title: "Shopping Cart",
@@ -107,6 +117,7 @@ export const translations = {
       continueShopping: "Continue Shopping",
       total: "Total",
       checkout: "Proceed to Checkout",
+      size: "Size",
     },
     checkout: {
       title: "Checkout",
@@ -121,8 +132,7 @@ export const translations = {
       success: "Order placed successfully!",
       error: "Failed to place order",
       successTitle: "Order Confirmed!",
-      successMessage:
-        "Thank you for your purchase. We'll send you an email with your order details.",
+      successMessage: "Thank you for your purchase.",
       continueShopping: "Continue Shopping",
       phoneContact:
         "We will contact you on your phone number to confirm your order. If we cannot reach you after two attempts, your order will be cancelled.",

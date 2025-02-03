@@ -19,25 +19,36 @@ export default function EditProductPage({ params }: PageProps) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const resolvedParams = use(params);
 
-  useEffect(() => {
-    if (resolvedParams.id) {
-      fetchProduct(resolvedParams.id);
-    }
-  }, [resolvedParams.id]);
-
   const fetchProduct = async (productId: string) => {
     try {
+      setIsLoading(true);
+      console.log("Fetching product:", productId);
+
       const response = await fetch(`/api/products/${productId}`);
-      if (!response.ok) throw new Error("Failed to fetch product");
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to fetch product");
+      }
+
+      console.log("Product data received:", data);
       setProduct(data);
     } catch (error) {
-      toast.error("Failed to load product");
-      router.push("/dashboard/products");
+      console.error("Error fetching product:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to load product"
+      );
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (resolvedParams.id) {
+      console.log("Params resolved, fetching product:", resolvedParams.id);
+      fetchProduct(resolvedParams.id);
+    }
+  }, [resolvedParams.id]);
 
   const handleDelete = async () => {
     setIsDeleting(true);

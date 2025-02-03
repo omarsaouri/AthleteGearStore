@@ -31,15 +31,16 @@ export default function DashboardPage() {
   }, []);
 
   const fetchStats = async () => {
-    setTimeout(() => {
-      setStats({
-        totalSales: 15420,
-        totalOrders: 125,
-        totalProducts: 48,
-        growthRate: 12.5,
-      });
+    try {
+      const response = await fetch("/api/dashboard/stats");
+      if (!response.ok) throw new Error("Failed to fetch stats");
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      toast.error("Failed to load dashboard stats");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const fetchAlerts = async () => {
@@ -109,7 +110,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           title="Total Sales"
-          value={`$${stats.totalSales.toLocaleString()}`}
+          value={`${stats.totalSales.toLocaleString()} DH`}
           icon={DollarSign}
           loading={isLoading}
         />

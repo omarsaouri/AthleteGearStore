@@ -11,9 +11,8 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [showVerificationCheck, setShowVerificationCheck] = useState(false);
   const [isCheckingVerification, setIsCheckingVerification] = useState(false);
 
@@ -43,6 +42,7 @@ export default function LoginPage() {
       const response = await axios.post("/api/auth/login", {
         email,
         password,
+        rememberMe,
       });
 
       if (response.status === 200) {
@@ -62,34 +62,6 @@ export default function LoginPage() {
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsResettingPassword(true);
-    try {
-      if (!email) {
-        throw new Error("Email is required");
-      }
-
-      const response = await axios.post("/api/auth/forgot-password", {
-        email,
-      });
-
-      if (response.status === 200) {
-        toast.success("Password reset instructions sent to your email!");
-        setShowForgotPassword(false);
-      }
-    } catch (error: any) {
-      console.error("Password reset error:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to send reset instructions";
-      toast.error(errorMessage);
-    } finally {
-      setIsResettingPassword(false);
     }
   };
 
@@ -157,53 +129,6 @@ export default function LoginPage() {
     );
   }
 
-  if (showForgotPassword) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-4">
-        <div className="w-full max-w-[400px] bg-foreground rounded-lg shadow-md border border-border">
-          <div className="p-4 sm:p-6 border-b border-border">
-            <h2 className="text-xl sm:text-2xl font-bold text-copy">
-              Reset Password
-            </h2>
-            <p className="text-xs sm:text-sm text-copy-light">
-              Enter your email to receive reset instructions
-            </p>
-          </div>
-          <div className="p-4 sm:p-6">
-            <form
-              onSubmit={handleForgotPassword}
-              className="space-y-4 sm:space-y-6"
-            >
-              <EmailInput
-                value={email}
-                onChange={setEmail}
-                required
-                className="w-full px-3 py-2 bg-foreground border border-border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-dark text-copy text-sm sm:text-base"
-              />
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  type="submit"
-                  disabled={isResettingPassword}
-                  className="flex-1 py-2 px-4 bg-primary hover:bg-primary-light text-primary-content font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-                >
-                  {isResettingPassword ? "Sending..." : "Send Reset Link"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(false)}
-                  className="flex-1 py-2 px-4 bg-background text-copy border border-border hover:bg-border rounded-md transition-colors text-sm sm:text-base"
-                >
-                  Back to Login
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-[400px] bg-foreground rounded-lg shadow-md border border-border">
@@ -219,7 +144,8 @@ export default function LoginPage() {
               value={email}
               onChange={setEmail}
               required
-              className="w-full px-3 py-2 bg-foreground border border-border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-dark text-copy text-sm sm:text-base"
+              className="w-full px-3 py-2 bg-foreground border border-border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-dark text-copy text-base"
+              style={{ fontSize: "16px" }}
             />
 
             <div className="space-y-2">
@@ -230,15 +156,39 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-foreground border border-border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-dark text-copy text-sm sm:text-base"
+                className="w-full px-3 py-2 bg-foreground border border-border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-dark text-copy text-base"
+                style={{ fontSize: "16px" }}
               />
-              <button
-                type="button"
-                onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-primary hover:text-primary-light transition-colors"
-              >
-                Forgot password?
-              </button>
+              <div className="flex items-center justify-between">
+                <label className="relative flex items-center">
+                  <input
+                    id="remember-me"
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="peer sr-only"
+                  />
+                  <div className="h-5 w-5 border border-border rounded bg-background transition-colors peer-checked:bg-primary peer-checked:border-primary peer-focus:ring-2 peer-focus:ring-primary/20">
+                    <svg
+                      className={`h-4 w-4 text-primary-content stroke-2 absolute top-0.5 left-0.5 ${
+                        rememberMe ? "opacity-100" : "opacity-0"
+                      } transition-opacity`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <span className="ml-2 text-sm text-copy-light">
+                    Remember me
+                  </span>
+                </label>
+              </div>
             </div>
 
             <button
