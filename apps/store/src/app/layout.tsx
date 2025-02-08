@@ -37,9 +37,9 @@ export default function RootLayout({
       <body className="h-full bg-background">
         <CartProvider>
           <LanguageProvider>
-            <div className="min-h-full flex flex-col h-screen">
+            <div className="min-h-full flex flex-col">
               <Navigation />
-              <main className="flex-1 overflow-auto">{children}</main>
+              <main className="flex-1">{children}</main>
               <Footer />
             </div>
             <Toaster

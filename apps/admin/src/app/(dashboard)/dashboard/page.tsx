@@ -178,8 +178,8 @@ export default function DashboardPage() {
                         {order.customerName}
                       </p>
                       <p className="text-sm text-copy-light">
-                        ${order.totalAmount.toFixed(2)} - {order.items.length}{" "}
-                        items
+                        {order.totalAmount.toFixed(2)} MAD -{" "}
+                        {order.items.length} items
                       </p>
                     </div>
                     <span className="text-warning font-medium">
