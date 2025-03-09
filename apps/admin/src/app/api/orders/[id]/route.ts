@@ -4,16 +4,17 @@ import { updateInventory } from "@/lib/inventory/updateInventory";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { status } = await request.json();
 
     // Get the current order to check previous status
     const { data: currentOrder, error: fetchError } = await supabase
       .from("orders")
       .select("*")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (fetchError) throw fetchError;
@@ -22,7 +23,7 @@ export async function PATCH(
     const { data: order, error: updateError } = await supabase
       .from("orders")
       .update({ status })
-      .eq("id", params.id)
+      .eq("id", id)
       .select()
       .single();
 

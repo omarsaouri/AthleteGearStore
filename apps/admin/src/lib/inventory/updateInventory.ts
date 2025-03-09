@@ -10,7 +10,7 @@ export async function updateInventory(
       const { data: product, error: fetchError } = await supabase
         .from("products")
         .select("inventory")
-        .eq("id", item.product_id)
+        .eq("id", item.productId)
         .single();
 
       if (fetchError) throw fetchError;
@@ -22,7 +22,7 @@ export async function updateInventory(
       const { error: updateError } = await supabase
         .from("products")
         .update({ inventory: newInventory })
-        .eq("id", item.product_id);
+        .eq("id", item.productId);
 
       if (updateError) throw updateError;
     }

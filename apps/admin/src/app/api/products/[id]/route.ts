@@ -3,12 +3,13 @@ import { supabase } from "@/lib/supabase";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log("Fetching product with ID:", params.id);
+    const { id } = await params;
+    console.log("Fetching product with ID:", id);
 
-    if (!params.id) {
+    if (!id) {
       console.log("Missing product ID");
       return NextResponse.json(
         { message: "Product ID is required" },
@@ -19,7 +20,7 @@ export async function GET(
     const { data: product, error } = await supabase
       .from("products")
       .select("*")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     console.log("Supabase response:", { product, error });
@@ -56,9 +57,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const data = await request.json();
 
     const { data: product, error } = await supabase
@@ -74,7 +76,7 @@ export async function PUT(
         images: data.images,
         sizes: data.sizes,
       })
-      .eq("id", params.id)
+      .eq("id", id)
       .select()
       .single();
 
@@ -92,13 +94,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await supabase
-      .from("products")
-      .delete()
-      .eq("id", params.id);
+    const { id } = await params;
+    const { error } = await supabase.from("products").delete().eq("id", id);
 
     if (error) throw error;
 

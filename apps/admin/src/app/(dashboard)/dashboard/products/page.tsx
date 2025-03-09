@@ -40,7 +40,7 @@ export default function ProductsPage() {
       if (!response.ok) throw new Error("Failed to fetch products");
       const data = await response.json();
       setProducts(data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load products");
     } finally {
       setIsLoading(false);
@@ -56,7 +56,7 @@ export default function ProductsPage() {
 
       setProducts((prev) => prev.filter((p) => p.id !== product.id));
       toast.success("Product deleted successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete product");
     } finally {
       setProductToDelete(null);

@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         ? "Your account has been verified! You can now log in."
         : "Your account is still pending verification. Please check back later.",
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { message: "Failed to check verification status" },
       { status: 500 }

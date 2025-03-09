@@ -61,7 +61,7 @@ export default function EditProductPage({ params }: PageProps) {
 
       toast.success("Product deleted successfully");
       router.push("/dashboard/products");
-    } catch (error) {
+    } catch {
       toast.error("Failed to delete product");
     } finally {
       setIsDeleting(false);

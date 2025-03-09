@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 
 export default function RegisterPage() {
@@ -24,7 +24,7 @@ export default function RegisterPage() {
           router.push("/dashboard");
         }
       } catch (error) {
-        // User is not authenticated, stay on register page
+        console.log(error);
       }
     };
     checkAuth();
@@ -48,11 +48,14 @@ export default function RegisterPage() {
         setIsRegistered(true);
         toast.success("Registration submitted successfully!");
       }
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      const errorMessage =
-        error.response?.data?.message || error.message || "Registration failed";
-      toast.error(errorMessage);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        const errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Registration failed";
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -71,15 +74,18 @@ export default function RegisterPage() {
       } else {
         toast.info(response.data.message);
       }
-    } catch (error: any) {
-      if (error.response?.status === 429) {
-        toast.error(
-          "Too many attempts. Please wait a minute before trying again."
-        );
-      } else {
-        toast.error(
-          error.response?.data?.message || "Failed to check verification status"
-        );
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 429) {
+          toast.error(
+            "Too many attempts. Please wait a minute before trying again."
+          );
+        } else {
+          toast.error(
+            error.response?.data?.message ||
+              "Failed to check verification status"
+          );
+        }
       }
     } finally {
       setIsCheckingVerification(false);
@@ -106,7 +112,7 @@ export default function RegisterPage() {
               <h3 className="font-semibold mb-2">What happens next?</h3>
               <ol className="text-left space-y-2">
                 <li>1. Our admin team will review your registration</li>
-                <li>2. Once approved, you'll be able to log in</li>
+                <li>2. Once approved, you&apos;ll be able to log in</li>
                 <li>3. You can check your verification status below</li>
               </ol>
             </div>

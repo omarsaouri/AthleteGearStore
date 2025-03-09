@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   DollarSign,
   ShoppingBag,
@@ -36,7 +36,7 @@ export default function DashboardPage() {
       if (!response.ok) throw new Error("Failed to fetch stats");
       const data = await response.json();
       setStats(data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load dashboard stats");
     } finally {
       setIsLoading(false);
@@ -54,7 +54,7 @@ export default function DashboardPage() {
       if (!ordersResponse.ok) throw new Error("Failed to fetch orders");
       const orders: Order[] = await ordersResponse.json();
       setPendingOrders(orders.filter((o) => o.status === "pending"));
-    } catch (error) {
+    } catch {
       toast.error("Failed to load alerts");
     }
   };
@@ -62,19 +62,17 @@ export default function DashboardPage() {
   const StatCard = ({
     title,
     value,
-    icon: Icon,
+    icon,
     loading,
   }: {
     title: string;
     value: string | number;
-    icon: any;
+    icon: ReactNode;
     loading: boolean;
   }) => (
     <div className="bg-foreground p-6 rounded-lg border border-border">
       <div className="flex items-center">
-        <div className="p-2 bg-primary/10 rounded-lg">
-          <Icon className="h-6 w-6 text-primary" />
-        </div>
+        <div className="p-2 bg-primary/10 rounded-lg">{icon}</div>
         <div className="ml-4">
           <p className="text-sm text-copy-light">{title}</p>
           {loading ? (
@@ -111,25 +109,25 @@ export default function DashboardPage() {
         <StatCard
           title="Total Sales"
           value={`${stats.totalSales.toLocaleString()} DH`}
-          icon={DollarSign}
+          icon={<DollarSign className="h-6 w-6 text-primary" />}
           loading={isLoading}
         />
         <StatCard
           title="Total Orders"
           value={stats.totalOrders}
-          icon={ShoppingCart}
+          icon={<ShoppingCart className="h-6 w-6 text-primary" />}
           loading={isLoading}
         />
         <StatCard
           title="Total Products"
           value={stats.totalProducts}
-          icon={ShoppingBag}
+          icon={<ShoppingBag className="h-6 w-6 text-primary" />}
           loading={isLoading}
         />
         <StatCard
           title="Growth Rate"
           value={`${stats.growthRate}%`}
-          icon={TrendingUp}
+          icon={<TrendingUp className="h-6 w-6 text-primary" />}
           loading={isLoading}
         />
       </div>

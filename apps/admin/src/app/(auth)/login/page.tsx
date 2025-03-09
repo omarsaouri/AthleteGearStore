@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
+import { AxiosError } from "axios";
 import { toast } from "sonner";
 import { EmailInput } from "@/components/ui/email-input";
 
@@ -25,7 +26,7 @@ export default function LoginPage() {
           router.push("/dashboard");
         }
       } catch (error) {
-        // User is not authenticated, stay on login page
+        console.log(error);
       }
     };
     checkAuth();
@@ -49,16 +50,18 @@ export default function LoginPage() {
         toast.success("Login successful!");
         router.push("/dashboard");
       }
-    } catch (error: any) {
-      if (
-        error.response?.status === 403 &&
-        error.response?.data?.status === "unverified"
-      ) {
-        setShowVerificationCheck(true);
-        toast.info("Your account is pending verification");
-      } else {
-        const errorMessage = error.response?.data?.message || "Login failed";
-        toast.error(errorMessage);
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (
+          error.response?.status === 403 &&
+          error.response?.data?.status === "unverified"
+        ) {
+          setShowVerificationCheck(true);
+          toast.info("Your account is pending verification");
+        } else {
+          const errorMessage = error.response?.data?.message || "Login failed";
+          toast.error(errorMessage);
+        }
       }
     } finally {
       setIsLoading(false);
@@ -78,11 +81,13 @@ export default function LoginPage() {
       } else {
         toast.info("Your account is still pending verification.");
       }
-    } catch (error: any) {
-      if (error.response?.status === 429) {
-        toast.error("Please wait before checking again");
-      } else {
-        toast.error("Failed to check verification status");
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 429) {
+          toast.error("Please wait before checking again");
+        } else {
+          toast.error("Failed to check verification status");
+        }
       }
     } finally {
       setIsCheckingVerification(false);
@@ -226,7 +231,7 @@ export default function LoginPage() {
             </button>
           </form>
           <div className="mt-4 text-center text-sm text-copy-light">
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/register"
               className="text-primary hover:text-primary-light transition-colors"

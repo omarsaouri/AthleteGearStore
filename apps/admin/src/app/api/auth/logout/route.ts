@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
 export async function POST() {
   try {
@@ -8,7 +7,7 @@ export async function POST() {
     response.cookies.delete("auth-token");
 
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: "Failed to logout" }, { status: 500 });
   }
 }

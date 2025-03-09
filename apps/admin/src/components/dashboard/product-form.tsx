@@ -29,8 +29,6 @@ interface ProductFormProps {
 
 const AVAILABLE_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
-type DragEvent = React.DragEvent<HTMLDivElement>;
-
 // Create a SortableImage component
 function SortableImage({
   url,
@@ -126,8 +124,6 @@ export default function ProductForm({
     images: initialData?.images || [],
     sizes: initialData?.sizes || [],
   });
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [touchStartIndex, setTouchStartIndex] = useState<number | null>(null);
 
   const sensors = useSensors(
     useSensor(TouchSensor, {
@@ -192,7 +188,7 @@ export default function ProductForm({
       setImages(newImages);
       setFormData((prev) => ({ ...prev, images: newImages }));
       toast.success("Images uploaded successfully");
-    } catch (error) {
+    } catch {
       toast.error("Failed to upload images");
     } finally {
       setIsLoading(false);
@@ -269,7 +265,7 @@ export default function ProductForm({
           : "Product created successfully!"
       );
       router.push("/dashboard/products");
-    } catch (error) {
+    } catch {
       toast.error(
         mode === "edit"
           ? "Failed to update product"

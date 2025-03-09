@@ -12,11 +12,13 @@ export async function POST(request: Request) {
 
     // First, create the bucket if it doesn't exist
     try {
-      const { data: bucketData, error: createBucketError } =
-        await supabase.storage.createBucket("products", {
+      const { error: createBucketError } = await supabase.storage.createBucket(
+        "products",
+        {
           public: true,
           fileSizeLimit: 52428800, // 50MB
-        });
+        }
+      );
 
       if (
         createBucketError &&
@@ -35,7 +37,7 @@ export async function POST(request: Request) {
     const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
     // Upload to Supabase Storage
-    const { data, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("products")
       .upload(fileName, buffer, {
         contentType: file.type,

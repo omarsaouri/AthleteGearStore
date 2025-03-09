@@ -84,10 +84,10 @@ export async function POST(req: Request) {
         </div>
       `,
     });
-
-    const { password: _, ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: pwd, ...userWithoutPassword } = user;
     return NextResponse.json(userWithoutPassword, { status: 201 });
-  } catch (error: any) {
+  } catch {
     return NextResponse.json(
       { message: "Failed to create user" },
       { status: 500 }

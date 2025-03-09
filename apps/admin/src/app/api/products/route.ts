@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import type { CreateProductData } from "@/lib/types/product";
 
 export async function POST(request: Request) {
   try {

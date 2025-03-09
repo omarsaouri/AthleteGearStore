@@ -9,7 +9,6 @@ import {
   XCircle,
   Clock,
   AlertCircle,
-  Mail,
   Phone,
   MapPin,
   ChevronDown,
@@ -58,7 +57,7 @@ export default function OrdersPage() {
       if (!response.ok) throw new Error();
       const data = await response.json();
       setOrders(data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load orders");
     } finally {
       setIsLoading(false);
@@ -75,7 +74,7 @@ export default function OrdersPage() {
       if (!response.ok) throw new Error();
       toast.success("Order status updated");
       fetchOrders();
-    } catch (error) {
+    } catch {
       toast.error("Failed to update order status");
     }
   };
