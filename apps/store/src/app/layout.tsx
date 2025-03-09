@@ -1,17 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
-import { Inter, Montserrat } from "next/font/google";
 import { CartProvider } from "@/lib/context/CartContext";
 import Navigation from "@/components/Navigation";
-import { Toaster, ToasterProps } from "sonner";
+import { Toaster } from "sonner";
 import Footer from "@/components/Footer";
-
-const inter = Inter({ subsets: ["latin"] });
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  variable: "--font-heading",
-});
 
 export const metadata: Metadata = {
   title: "Athlete's Gear Store",
@@ -48,12 +41,10 @@ export default function RootLayout({
               richColors
               toastOptions={{
                 className: "!bg-foreground !border !border-border !text-copy",
-                success: {
-                  className: "!bg-primary !text-primary-content !border-none",
-                } as ToasterProps["toastOptions"],
-                error: {
-                  className: "!bg-red-500 !text-white !border-none",
-                } as ToasterProps["toastOptions"],
+                classNames: {
+                  success: "!bg-primary !text-primary-content !border-none",
+                  error: "!bg-red-500 !text-white !border-none",
+                },
               }}
             />
           </LanguageProvider>

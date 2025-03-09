@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { Product } from "@/lib/types/product";
 
-interface CartItem extends Product {
+export interface CartItem extends Product {
   quantity: number;
   selectedSize?: string;
 }

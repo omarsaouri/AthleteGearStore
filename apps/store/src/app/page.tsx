@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { ShoppingBag, Shield, Truck, Award } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { Logo } from "@/components/Logo";
 import { motion } from "framer-motion";
 
 export default function Home() {

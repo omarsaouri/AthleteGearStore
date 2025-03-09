@@ -11,6 +11,7 @@ export async function getProducts(): Promise<Product[]> {
     const data = await response.json();
 
     // Map the snake_case database fields to camelCase for frontend
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data.map((product: any) => ({
       id: product.id,
       name: product.name,
