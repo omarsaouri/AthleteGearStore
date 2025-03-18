@@ -15,6 +15,7 @@ export async function POST(request: Request) {
           sale_price: data.salePrice ? parseFloat(data.salePrice) : null,
           on_sale: data.onSale,
           category: data.category,
+          category_id: data.category_id,
           inventory: parseInt(data.inventory),
           images: data.images,
           sizes: data.sizes,
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     console.error("Error creating product:", error);
     return NextResponse.json(
       { message: "Failed to create product" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -51,6 +52,7 @@ export async function PUT(request: Request) {
           : null,
         on_sale: updateData.onSale,
         category: updateData.category,
+        category_id: updateData.category_id,
         inventory: parseInt(updateData.inventory),
         images: updateData.images,
         sizes: updateData.sizes,
@@ -66,7 +68,7 @@ export async function PUT(request: Request) {
     console.error("Error updating product:", error);
     return NextResponse.json(
       { message: "Failed to update product" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -75,7 +77,7 @@ export async function GET() {
   try {
     const { data: products, error } = await supabase
       .from("products")
-      .select("*")
+      .select("*, categories(*)")
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -85,7 +87,7 @@ export async function GET() {
     console.error("Error fetching products:", error);
     return NextResponse.json(
       { message: "Failed to fetch products" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

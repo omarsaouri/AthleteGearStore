@@ -3,13 +3,13 @@ import { supabase } from "../../../../lib/supabase";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const { data: product, error } = await supabase
       .from("products")
-      .select("*")
+      .select("*, categories(*)")
       .eq("id", id)
       .single();
 
@@ -17,7 +17,7 @@ export async function GET(
     if (!product) {
       return NextResponse.json(
         { message: "Product not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -26,7 +26,7 @@ export async function GET(
     console.error("Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

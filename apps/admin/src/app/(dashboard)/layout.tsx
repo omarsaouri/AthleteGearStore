@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   X,
+  Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +54,7 @@ export default function DashboardLayout({
   const navLinks = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/dashboard/products", label: "Products", icon: Package },
+    { href: "/dashboard/categories", label: "Categories", icon: Tag },
     { href: "/dashboard/orders", label: "Orders", icon: ShoppingCart },
   ];
 

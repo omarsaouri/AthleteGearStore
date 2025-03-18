@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { X, GripVertical } from "lucide-react";
+import { X, GripVertical, Loader2Icon } from "lucide-react";
 import type { CreateProductData, Product } from "@/lib/types/product";
 import {
   DndContext,
@@ -21,6 +21,9 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { getCategories } from "@/lib/api/categories";
+import { Category } from "@/lib/types/category";
+import { updateProduct, createProduct } from "@/lib/api/products";
 
 interface ProductFormProps {
   initialData?: Product;
@@ -113,6 +116,9 @@ export default function ProductForm({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [images, setImages] = useState<string[]>(initialData?.images || []);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] =
+    useState<boolean>(false);
   const [formData, setFormData] = useState<CreateProductData>({
     name: initialData?.name || "",
     description: initialData?.description || "",
@@ -120,6 +126,7 @@ export default function ProductForm({
     salePrice: initialData?.salePrice?.toString() || "",
     onSale: initialData?.onSale || false,
     category: initialData?.category || "",
+    category_id: initialData?.category_id || "",
     inventory: initialData?.inventory?.toString() || "0",
     images: initialData?.images || [],
     sizes: initialData?.sizes || [],
@@ -136,13 +143,48 @@ export default function ProductForm({
       activationConstraint: {
         distance: 5,
       },
-    })
+    }),
   );
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    async function fetchCategories() {
+      setIsLoadingCategories(true);
+      try {
+        const categoriesData = await getCategories();
+        setCategories(categoriesData);
+
+        // If we don't have a category_id set but have a category slug, try to find matching category
+        if (
+          !formData.category_id &&
+          formData.category &&
+          categoriesData.length > 0
+        ) {
+          const matchingCategory = categoriesData.find(
+            (cat) => cat.slug === formData.category,
+          );
+          if (matchingCategory) {
+            setFormData((prev) => ({
+              ...prev,
+              category_id: matchingCategory.id,
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+        toast.error("Failed to load categories");
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    }
+
+    fetchCategories();
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
 
@@ -151,6 +193,14 @@ export default function ProductForm({
       setFormData((prev) => ({
         ...prev,
         [name]: value,
+      }));
+    } else if (name === "category_id" && value) {
+      // When category_id changes, also update the category field with the slug
+      const selectedCategory = categories.find((cat) => cat.id === value);
+      setFormData((prev) => ({
+        ...prev,
+        category_id: value,
+        category: selectedCategory ? selectedCategory.slug : prev.category,
       }));
     } else {
       setFormData((prev) => ({
@@ -223,54 +273,45 @@ export default function ProductForm({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
-      console.log("Submitting form data:", formData);
-      setIsLoading(true);
-
-      // Convert price and inventory to numbers before sending
-      const submissionData = {
-        ...formData,
-        price: formData.price === "" ? 0 : parseFloat(formData.price as string),
-        inventory:
-          formData.inventory === ""
-            ? 0
-            : parseInt(formData.inventory as string),
-      };
-
-      const url =
-        mode === "edit" ? `/api/products/${initialData?.id}` : "/api/products";
-      const method = mode === "edit" ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submissionData),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          mode === "edit"
-            ? "Failed to update product"
-            : "Failed to create product"
+      // Ensure we have the category_id and category slug
+      if (formData.category_id) {
+        const selectedCategory = categories.find(
+          (cat) => cat.id === formData.category_id,
         );
+        if (selectedCategory && !formData.category) {
+          formData.category = selectedCategory.slug;
+        }
+      } else if (formData.category) {
+        const matchingCategory = categories.find(
+          (cat) => cat.slug === formData.category,
+        );
+        if (matchingCategory) {
+          formData.category_id = matchingCategory.id;
+        }
       }
 
-      toast.success(
-        mode === "edit"
-          ? "Product updated successfully!"
-          : "Product created successfully!"
-      );
+      const productData = {
+        ...formData,
+        images,
+      };
+
+      if (mode === "edit" && initialData) {
+        await updateProduct(initialData.id, productData);
+        toast.success("Product updated successfully");
+      } else {
+        await createProduct(productData);
+        toast.success("Product created successfully");
+      }
+
       router.push("/dashboard/products");
-    } catch {
-      toast.error(
-        mode === "edit"
-          ? "Failed to update product"
-          : "Failed to create product"
-      );
+    } catch (error) {
+      console.error("Error saving product:", error);
+      toast.error(`Failed to ${mode === "edit" ? "update" : "create"} product`);
     } finally {
       setIsLoading(false);
     }
@@ -384,20 +425,28 @@ export default function ProductForm({
         >
           Category
         </label>
-        <select
-          id="category"
-          name="category"
-          value={formData.category}
-          onChange={handleInputChange}
-          required
-          className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-copy placeholder-copy-light focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-        >
-          <option value="">Select a category</option>
-          <option value="clothing">Clothing</option>
-          <option value="shoes">Shoes</option>
-          <option value="accessories">Accessories</option>
-          <option value="equipment">Equipment</option>
-        </select>
+        {isLoadingCategories ? (
+          <div className="flex items-center mt-1 p-2">
+            <Loader2Icon className="w-4 h-4 animate-spin mr-2" />
+            Loading categories...
+          </div>
+        ) : (
+          <select
+            id="category_id"
+            name="category_id"
+            value={formData.category_id}
+            onChange={handleInputChange}
+            required
+            className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-copy placeholder-copy-light focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          >
+            <option value="">Select a category</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div>

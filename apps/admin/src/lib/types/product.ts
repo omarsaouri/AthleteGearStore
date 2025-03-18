@@ -6,6 +6,7 @@ export interface Product {
   salePrice?: number;
   onSale: boolean;
   category: string;
+  category_id?: string;
   inventory: number;
   images: string[];
   sizes: string[];
@@ -20,6 +21,7 @@ export interface CreateProductData {
   salePrice?: string;
   onSale: boolean;
   category: string;
+  category_id: string;
   inventory: string;
   images: string[];
   sizes: string[];

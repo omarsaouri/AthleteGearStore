@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -13,13 +13,13 @@ export async function GET(
       console.log("Missing product ID");
       return NextResponse.json(
         { message: "Product ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const { data: product, error } = await supabase
       .from("products")
-      .select("*")
+      .select("*, categories(*)")
       .eq("id", id)
       .single();
 
@@ -29,7 +29,7 @@ export async function GET(
       console.error("Supabase error:", error);
       return NextResponse.json(
         { message: "Failed to fetch product", error: error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -37,7 +37,7 @@ export async function GET(
       console.log("Product not found");
       return NextResponse.json(
         { message: "Product not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -50,14 +50,14 @@ export async function GET(
         message: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -72,6 +72,7 @@ export async function PUT(
         sale_price: data.salePrice ? parseFloat(data.salePrice) : null,
         on_sale: data.onSale,
         category: data.category,
+        category_id: data.category_id,
         inventory: parseInt(data.inventory),
         images: data.images,
         sizes: data.sizes,
@@ -87,14 +88,14 @@ export async function PUT(
     console.error("Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -107,7 +108,7 @@ export async function DELETE(
     console.error("Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

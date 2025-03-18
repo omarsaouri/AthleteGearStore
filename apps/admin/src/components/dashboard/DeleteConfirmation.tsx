@@ -8,6 +8,8 @@ interface DeleteConfirmationProps {
   onConfirm: () => void;
   title: string;
   message: string;
+  confirmLabel?: string;
+  disabled?: boolean;
 }
 
 export default function DeleteConfirmation({
@@ -16,6 +18,8 @@ export default function DeleteConfirmation({
   onConfirm,
   title,
   message,
+  confirmLabel = "Delete",
+  disabled = false,
 }: DeleteConfirmationProps) {
   if (!isOpen) return null;
 
@@ -49,9 +53,10 @@ export default function DeleteConfirmation({
               onConfirm();
               onClose();
             }}
-            className="px-4 py-2 text-sm font-medium text-error-content bg-error rounded-md hover:bg-error/90 transition-colors"
+            disabled={disabled}
+            className="px-4 py-2 text-sm font-medium text-error-content bg-error rounded-md hover:bg-error/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Delete
+            {confirmLabel}
           </button>
         </div>
       </div>
