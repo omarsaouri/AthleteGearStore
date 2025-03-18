@@ -9,6 +9,10 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Athlete's Gear Store",
   description: "Your E-commerce Store",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/favicon.svg" }],
+  },
 };
 
 export default function RootLayout({
@@ -26,6 +30,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#1a1b1e" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
       </head>
       <body className="h-full bg-background">
         <CartProvider>
